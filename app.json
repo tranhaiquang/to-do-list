@@ -1,12 +1,13 @@
 {
   "expo": {
-    "name": "to-do-list-app",
+    "name": "My To-Do",
     "slug": "to-do-list-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "plugins": ["expo-font"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -16,13 +17,21 @@
       "supportsTablet": true
     },
     "android": {
+      "icon": "./assets/icon.png",
+      "label": "My To-Do",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.todolistapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ab055eab-c0ca-4005-956a-69ea0a8837f5"
+      }
     }
   }
 }

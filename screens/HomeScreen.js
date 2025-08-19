@@ -1,0 +1,388 @@
+// HomeScreen component - main screen for displaying and managing tasks
+// Observed for UI and state changes related to tasks, modals, and user actions
+
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  Keyboard,
+  StatusBar,
+  FlatList,
+  ScrollView,
+} from "react-native";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  RadioButton,
+  Menu,
+  Divider,
+  PaperProvider,
+} from "react-native-paper";
+import {
+  addTaskToFirestore,
+  listenToFirestoreData,
+  setIsDone,
+  deleteTaskOnFirestore,
+  getUsernameOnFirestore,
+  setTaskTitle,
+} from "../firebase/firestoreServices";
+import { signOutFromFirebase } from "../firebase/firebaseAuth";
+import moment from "moment";
+import ConfirmModal from "./ConfirmModal";
+import TextInputModal from "./TextInputModal";
+import {
+  Quicksand_400Regular,
+  Quicksand_500Medium,
+  Quicksand_700Bold,
+  useFonts,
+} from "@expo-google-fonts/quicksand";
+import { Feather } from "@expo/vector-icons";
+import * as SplashScreen from "expo-splash-screen";
+
+
+// HomeScreen: Main component for the home/tasks screen
+export default function HomeScreen({ navigation, route }) {
+  // State variables for user, modals, tasks, and UI
+  const [name, setName] = useState("");
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [enterTaskModalVisible, setEnterTaskModalVisible] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [currentTaskTitle, setCurrentTaskTitle] = useState("");
+  const [checked, setChecked] = useState("second");
+  const [tasks, setTasks] = useState([]);
+  const [displayTasks, setDisplayTasks] = useState([])
+  const [menuVisibleId, setMenuVisibleId] = useState(null);
+  const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const TAGS = ["All", "Working", "Personal", "Wishlist", "Birthday"];
+  const [selectedTag, setSelectedTag] = useState("")
+
+  const inputRef = useRef(null);
+  const { userId } = route.params;
+  const currentMMDD = moment().format("DD-MM");
+
+  // Load custom fonts
+  const [fontsLoaded] = useFonts({
+    Quicksand_400Regular,
+    Quicksand_500Medium,
+    Quicksand_700Bold,
+  });
+
+  // Track if any modal is visible
+  const anyModalVisible =
+    enterTaskModalVisible || confirmModalVisible || editModalVisible;
+
+  // Prevent splash screen auto-hide until ready
+  useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
+  }, []);
+
+  // Fetch tasks and username from Firestore
+  useEffect(() => {
+    if (!userId || !fontsLoaded) return;
+
+    const unsubscribe = listenToFirestoreData(userId, (tasksFromFirestore) => {
+      // Sort tasks by month, then by date (ascending)
+      const sortedTasks = [...tasksFromFirestore].sort((a, b) => {
+        const [dateA, monthA] = a.date.split("-").map(Number);
+        const [dateB, monthB] = b.date.split("-").map(Number);
+        if (monthA !== monthB) return monthA - monthB;
+        return dateA - dateB;
+      });
+      setTasks(sortedTasks);
+      filterByTag("all")
+      setIsDataLoaded(true);
+    });
+
+    getUsernameOnFirestore(userId).then(setName);
+
+    return () => unsubscribe();
+  }, [userId, fontsLoaded]);
+
+  const filterByTag = (tagName) => {
+    if (tagName === "all") {
+      setDisplayTasks(tasks)
+    } else {
+      const filterTask = tasks.filter(task => task.tag === tagName)
+      setDisplayTasks(filterTask)
+    }
+  }
+
+  // Hide splash screen when ready
+  useEffect(() => {
+    if (fontsLoaded && userId && isDataLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, userId, isDataLoaded]);
+
+  // UI helpers for menu and modals
+  const openMenu = useCallback((id) => setMenuVisibleId(id), []);
+  const closeMenu = useCallback(() => setMenuVisibleId(null), []);
+  const openModal = useCallback(() => {
+    setEnterTaskModalVisible(true);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, []);
+  const dismissUIOverlays = useCallback(() => {
+    Keyboard.dismiss();
+    setEditModalVisible(false);
+    setEnterTaskModalVisible(false);
+    setConfirmModalVisible(false);
+    closeMenu();
+  }, [closeMenu]);
+
+  // Early return if not ready
+  if (!fontsLoaded || !userId || !isDataLoaded) return null;
+
+  // Render a single task item
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      onPressIn={(e) => {
+        const { pageX, pageY } = e.nativeEvent;
+        setTouchPosition({ x: pageX, y: pageY });
+      }}
+      onLongPress={() => openMenu(item.id)}
+    >
+      <View style={styles.taskView}>
+        {/* ConfirmModal for deleting a task */}
+        <ConfirmModal
+          onDismiss={dismissUIOverlays}
+          onConfirm={() => {
+            deleteTaskOnFirestore(userId, item.id);
+            setConfirmModalVisible(false);
+          }}
+          visible={confirmModalVisible}
+          message="Are you want to delete this task?"
+        />
+        {/* TextInputModal for editing a task title */}
+        <TextInputModal
+          modalVisible={editModalVisible}
+          inputPlaceholderText="Enter task title"
+          setText={setCurrentTaskTitle}
+          inputRef={inputRef}
+          onConfirm={() => {
+            setTaskTitle(userId, item.id, currentTaskTitle);
+            dismissUIOverlays();
+          }}
+          onDismiss={dismissUIOverlays}
+        />
+        {/* RadioButton for marking task as done */}
+        <RadioButton
+          color="rgba(255, 172, 207, 1)"
+          value={item.id}
+          status={item.isDone ? "checked" : "unchecked"}
+          onPress={() => {
+            setChecked(checked === "first" ? "second" : "first");
+            setIsDone(userId, item.id, !item.isDone);
+          }}
+        />
+        <View style={styles.taskItemContainer}>
+          <Text style={item.isDone ? styles.taskTextChecked : styles.taskText}>
+            {item.title}
+          </Text>
+          <Text style={styles.taskDateText}>{item.date}</Text>
+        </View>
+        {/* Menu for edit/delete actions */}
+        <Menu
+          visible={menuVisibleId === item.id}
+          onDismiss={closeMenu}
+          anchor={{ x: touchPosition.x, y: touchPosition.y - 50 }}
+        >
+          <Menu.Item
+            onPress={() => {
+              setEditModalVisible(true);
+              closeMenu();
+            }}
+            title="Edit"
+            titleStyle={{ fontFamily: "Quicksand_500Medium" }}
+          />
+          <Divider />
+          <Menu.Item
+            style={styles.menuItem}
+            onPress={() => {
+              setConfirmModalVisible(true);
+              closeMenu();
+            }}
+            title="Delete"
+            titleStyle={{ fontFamily: "Quicksand_500Medium" }}
+          />
+        </Menu>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.centeredView}>
+        <StatusBar
+          backgroundColor={anyModalVisible ? "rgba(0,0,0,0.3)" : "transparent"}
+          translucent
+        />
+
+        {/* Modal for entering a new task */}
+        <TextInputModal
+          modalVisible={enterTaskModalVisible}
+          inputPlaceholderText="Enter task"
+          setText={setCurrentTaskTitle}
+          setTag={setSelectedTag}
+          inputRef={inputRef}
+          onConfirm={() => {
+            addTaskToFirestore(userId, currentTaskTitle, currentMMDD, selectedTag, false);
+            dismissUIOverlays();
+          }}
+          onDismiss={dismissUIOverlays}
+        />
+
+        {/* Header with greeting and logout */}
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Hi {name}</Text>
+          <TouchableOpacity onPress={() => signOutFromFirebase(navigation)}>
+            <Feather name="log-out" size={20} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Tags row */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingVertical: 16,
+            alignContent: "flex-start",
+          }}
+          style={{ maxHeight: "9%", width: "90%" }}
+        >
+          {TAGS.map((tag, idx) => (
+            <TouchableOpacity onPress={() => {
+              filterByTag(tag.toLowerCase())
+            }} key={tag} style={styles.selectedTag}>
+              <Text style={styles.selectedTagText}>{tag}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Task List */}
+        <View style={styles.listContainer}>
+          <PaperProvider>
+            <FlatList
+              data={displayTasks}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+            />
+          </PaperProvider>
+        </View>
+
+        {/* Add Button for new task */}
+        <TouchableOpacity style={styles.addBtn} onPress={openModal}>
+          <Text style={styles.addBtnText}>+</Text>
+        </TouchableOpacity>
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+}
+
+// Styles for HomeScreen and its subcomponents
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  header: {
+    width: "94%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  headerText: {
+    fontFamily: "Quicksand_700Bold",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+  },
+  listContainer: {
+    flex: 1,
+    width: "100%",
+    height: "40%",
+  },
+  taskView: {
+    width: "90%",
+    flexDirection: "row",
+    backgroundColor: "rgba(0, 0, 0, 0.06)",
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    alignItems: "center",
+    alignSelf: "center",
+    gap: 8,
+  },
+  taskText: {
+    fontFamily: "Quicksand_500Medium",
+  },
+  taskTextChecked: {
+    fontFamily: "Quicksand_500Medium",
+    textDecorationLine: "line-through",
+    color: "rgba(0,0,0,0.4)",
+  },
+  addBtn: {
+    width: 80,
+    height: 80,
+    backgroundColor: "rgba(255, 172, 207, 1)",
+    borderRadius: 100,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "absolute",
+    bottom: 30,
+    right: 30,
+    zIndex: 10,
+  },
+  addBtnText: {
+    color: "white",
+    fontSize: 50,
+  },
+  taskItemContainer: {
+    flexDirection: "column",
+    gap: 4,
+  },
+  taskDateText: {
+    color: "rgba(255, 172, 207, 1)",
+    fontSize: 12,
+    fontFamily: "Quicksand_500Medium",
+  },
+  menuItem: {
+    fontFamily: "Quicksand_400Regular",
+  },
+  tag: {
+    backgroundColor: "rgba(255, 172, 207, 1)",
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 172, 207, 0.3)",
+    justifyContent: "center",
+  },
+  selectedTag: {
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255, 172, 207, 1)",
+    justifyContent: "center",
+  },
+  tagText: {
+    fontSize: 14,
+    fontFamily: "Quicksand_500Bold",
+    color: "white",
+  },
+  selectedTagText: {
+    fontSize: 14,
+    fontFamily: "Quicksand_500Bold",
+    color: "black",
+  }
+});
