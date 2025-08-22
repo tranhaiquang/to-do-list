@@ -39,6 +39,8 @@ export default function TextInputModal({
   });
 
   const [selectedTag, setSelectedTag] = useState('');
+  const [taskText, setTaskText] = useState('');
+  const [errors, setErrors] = useState({})
 
   // Handle splash screen logic only once
   useEffect(() => {
@@ -51,27 +53,56 @@ export default function TextInputModal({
     }
   }, [fontsLoaded]);
 
-  // Reset selectedTag when modal opens/closes
+  const handleDismiss = onDismiss || Keyboard.dismiss;
+
+
+  // Reset when modal closes
   useEffect(() => {
     if (!modalVisible) {
       setSelectedTag('');
+      setTaskText('');
+      setErrors({});
     }
   }, [modalVisible]);
 
-  // Handler for tag selection
-  const handleTagChange = (item) => {
-    setSelectedTag(item.value);
-    if (typeof setTag === 'function') {
-      setTag(item.value);
+  const handleTaskTitleChange = (text) => {
+    setTaskText(text);
+    if (errors.taskText) {
+      setErrors((prev) => ({ ...prev, taskText: null }));
     }
   };
 
-  // Handler for dismiss (ensures fallback to Keyboard.dismiss)
-  const handleDismiss = onDismiss || Keyboard.dismiss;
+  const handleTagChange = (item) => {
+    setSelectedTag(item.value);
+    if (typeof setTag === "function") {
+      setTag(item.value);
+    }
+    if (errors.selectedTag) {
+      setErrors((prev) => ({ ...prev, selectedTag: null }));
+    }
+  };
+
+  const handleSubmit = () => {
+    const newErrors = {};
+
+    if (!taskText.trim()) {
+      newErrors.taskText = "Task title is required";
+    }
+    if (!selectedTag) {
+      newErrors.selectedTag = "Tag is required";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      if (typeof setText === "function") setText(taskText);
+      if (typeof onConfirm === "function") onConfirm();
+    }
+  };
+
 
   if (!fontsLoaded) return null;
 
-  // TextInputModal component: displays a modal for entering a task and selecting a tag
   return (
     <Modal animationType="fade" visible={modalVisible} transparent>
       <TouchableWithoutFeedback style={{ flex: 1 }} onPress={handleDismiss}>
@@ -79,13 +110,15 @@ export default function TextInputModal({
           <View style={styles.modalView}>
             <TextInput
               ref={inputRef}
-              style={styles.modalTextInput}
-              onChangeText={setText}
+              style={[styles.modalTextInput, errors.taskText && styles.modalTextInputError]}
+              onChangeText={handleTaskTitleChange}
+              value={taskText}
               placeholder={inputPlaceholderText}
               placeholderTextColor="#aaa"
             />
+            {errors.taskText && <Text style={styles.errorText}>{errors.taskText}</Text>}
             <Dropdown
-              style={styles.dropdown}
+              style={[styles.dropdown, errors.selectedTag && styles.dropdownError]}
               containerStyle={styles.dropdownContainer}
               itemContainerStyle={styles.itemContainer}
               itemTextStyle={styles.itemText}
@@ -98,6 +131,7 @@ export default function TextInputModal({
               value={selectedTag}
               onChange={handleTagChange}
             />
+            {errors.selectedTag && <Text style={styles.errorText}>{errors.selectedTag}</Text>}
             <View
               style={{
                 justifyContent: 'center',
@@ -112,7 +146,7 @@ export default function TextInputModal({
               >
                 <Text style={styles.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={onConfirm} style={styles.submitBtn}>
+              <TouchableOpacity onPress={handleSubmit} style={styles.submitBtn}>
                 <Text style={styles.submitBtnText}>Submit</Text>
               </TouchableOpacity>
             </View>
@@ -143,7 +177,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    gap: 20,
+    gap: 15,
   },
   modalTextInput: {
     width: '100%',
@@ -155,8 +189,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontFamily: 'Quicksand_400Regular',
     fontSize: 16,
-    marginBottom: 0,
   },
+  modalTextInputError: {
+    borderWidth: 2,
+    borderColor: '#ff6b6ba6'
+  },
+
   submitBtn: {
     width: '30%',
     padding: 10,
@@ -186,7 +224,11 @@ const styles = StyleSheet.create({
     borderColor: '#aaa',
     borderRadius: 12,
     padding: 12,
-    width: 300,
+    width: "100%",
+  },
+  dropdownError: {
+    borderWidth: 2,
+    borderColor: '#ff6b6ba6',
   },
   dropdownContainer: {
     borderRadius: 12,
@@ -200,5 +242,16 @@ const styles = StyleSheet.create({
   },
   selectedText: {
     fontFamily: 'Quicksand_400Regular',
+  },
+  errorText: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 14,
+    fontFamily: "Quicksand_400Regular",
+    marginLeft: 10,
+    backgroundColor: '#ff6b6ba6',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 15,
+    alignSelf: 'flex-start',
   },
 });

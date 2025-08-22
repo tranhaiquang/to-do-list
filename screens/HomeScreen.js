@@ -55,7 +55,8 @@ export default function HomeScreen({ navigation, route }) {
   const [menuVisibleId, setMenuVisibleId] = useState(null);
   const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const TAGS = ["All", "Working", "Personal", "Wishlist", "Birthday"];
+  const filterTag = ["All", "Working", "Personal", "Wishlist", "Birthday"];
+  const [selectedFilterTag, setSelectedFilterTag] = useState("all")
   const [selectedTag, setSelectedTag] = useState("")
 
   const inputRef = useRef(null);
@@ -91,7 +92,6 @@ export default function HomeScreen({ navigation, route }) {
         return dateA - dateB;
       });
       setTasks(sortedTasks);
-      filterByTag("all")
       setIsDataLoaded(true);
     });
 
@@ -108,6 +108,10 @@ export default function HomeScreen({ navigation, route }) {
       setDisplayTasks(filterTask)
     }
   }
+
+  useEffect(() => {
+    filterByTag("all")
+  }, [tasks])
 
   // Hide splash screen when ready
   useEffect(() => {
@@ -251,13 +255,17 @@ export default function HomeScreen({ navigation, route }) {
           }}
           style={{ maxHeight: "9%", width: "90%" }}
         >
-          {TAGS.map((tag, idx) => (
-            <TouchableOpacity onPress={() => {
-              filterByTag(tag.toLowerCase())
-            }} key={tag} style={styles.selectedTag}>
-              <Text style={styles.selectedTagText}>{tag}</Text>
-            </TouchableOpacity>
-          ))}
+          {filterTag.map((tag, idx) => {
+            const tagLower = tag.toLowerCase()
+            return (
+              <TouchableOpacity onPress={() => {
+                setSelectedFilterTag(tagLower)
+                filterByTag(tagLower)
+              }} key={tag} style={selectedFilterTag === tagLower ? styles.tag : styles.selectedTag}>
+                <Text style={selectedFilterTag === tagLower ? styles.tagText : styles.selectedTagText}>{tag}</Text>
+              </TouchableOpacity>
+            )
+          })}
         </ScrollView>
 
         {/* Task List */}
