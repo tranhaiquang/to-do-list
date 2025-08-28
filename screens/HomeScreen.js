@@ -8,7 +8,7 @@ import {
   View,
   StyleSheet,
   Keyboard,
-  StatusBar,
+  Image,
   FlatList,
   ScrollView,
 } from "react-native";
@@ -39,7 +39,7 @@ import {
 } from "@expo-google-fonts/quicksand";
 import { Feather } from "@expo/vector-icons";
 import * as SplashScreen from "expo-splash-screen";
-
+import { StatusBar } from "expo-status-bar";
 
 // HomeScreen: Main component for the home/tasks screen
 export default function HomeScreen({ navigation, route }) {
@@ -58,6 +58,7 @@ export default function HomeScreen({ navigation, route }) {
   const filterTag = ["All", "Working", "Personal", "Wishlist", "Birthday"];
   const [selectedFilterTag, setSelectedFilterTag] = useState("all")
   const [selectedTag, setSelectedTag] = useState("")
+  const allDone = displayTasks.length > 0 && displayTasks.every(task => task.isDone === true)
 
   const inputRef = useRef(null);
   const { userId } = route.params;
@@ -69,6 +70,7 @@ export default function HomeScreen({ navigation, route }) {
     Quicksand_500Medium,
     Quicksand_700Bold,
   });
+
 
   // Track if any modal is visible
   const anyModalVisible =
@@ -219,7 +221,7 @@ export default function HomeScreen({ navigation, route }) {
     <SafeAreaProvider>
       <SafeAreaView style={styles.centeredView}>
         <StatusBar
-          backgroundColor={anyModalVisible ? "rgba(0,0,0,0.3)" : "transparent"}
+          style="dark"
           translucent
         />
 
@@ -269,12 +271,26 @@ export default function HomeScreen({ navigation, route }) {
         </ScrollView>
 
         {/* Task List */}
+
         <View style={styles.listContainer}>
+
           <PaperProvider>
+            {allDone && <View style={[styles.emptyContainer, { marginTop: 60, marginBottom: 100, }]}>
+              <Image style={styles.img} source={require('../assets/all-tasks-done-img.png')}></Image>
+              <Text style={styles.emptyText}>You nailed it!</Text>
+              <Text style={styles.emptyText}>Time to relax or add new goals.</Text>
+            </View>
+            }
+
             <FlatList
               data={displayTasks}
               keyExtractor={(item) => item.id}
               renderItem={renderItem}
+              ListEmptyComponent={<View style={styles.emptyContainer}>
+                <Image style={styles.img} source={require('../assets/empty-task-img.png')}></Image>
+                <Text style={styles.emptyText}>No tasks in this category for now.</Text>
+                <Text style={styles.emptyText}>Click + to add your task.</Text>
+              </View>}
             />
           </PaperProvider>
         </View>
@@ -294,6 +310,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#FFF"
   },
   scrollView: {
     flex: 1,
@@ -392,5 +409,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: "Quicksand_500Bold",
     color: "black",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 50,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontFamily: "Quicksand_700Bold",
+    color: "#999",
+    textAlign: "center",
+    alignSelf: "center",
+  },
+  img: {
+    resizeMode: "center",
+    height: 300,
+
   }
 });

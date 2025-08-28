@@ -4,6 +4,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts, Quicksand_400Regular, Quicksand_700Bold, Quicksand_500Medium } from '@expo-google-fonts/quicksand';
 import { createUser } from '../firebase/firebaseAuth';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { StatusBar } from 'expo-status-bar';
 
 export default function SignUpScreen({ navigation }) {
     const [name, setName] = useState('')
@@ -115,7 +116,7 @@ export default function SignUpScreen({ navigation }) {
                     style={{ flex: 1 }}
                     contentContainerStyle={{
                         flexGrow: 1,
-                        justifyContent: 'center', 
+                        justifyContent: 'center',
                         paddingHorizontal: 30,
                         paddingVertical: 20
                     }}
@@ -123,6 +124,7 @@ export default function SignUpScreen({ navigation }) {
                     enableOnAndroid
                     extraScrollHeight={80}
                 >
+                    <StatusBar style='dark' translucent></StatusBar>
                     <Text style={styles.headerText}>MY TO-DO</Text>
                     <View style={styles.formContainer}>
                         <View style={styles.inputGroup}>

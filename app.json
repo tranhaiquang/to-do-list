@@ -20,7 +20,7 @@
       "icon": "./assets/icon.png",
       "label": "My To-Do",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.anonymous.todolistapp"
