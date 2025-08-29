@@ -1,7 +1,7 @@
 // HomeScreen component - main screen for displaying and managing tasks
 // Observed for UI and state changes related to tasks, modals, and user actions
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Text,
   TouchableOpacity,
@@ -273,24 +273,25 @@ export default function HomeScreen({ navigation, route }) {
         {/* Task List */}
 
         <View style={styles.listContainer}>
-
           <PaperProvider>
-            {allDone && <View style={[styles.emptyContainer, { marginTop: 60, marginBottom: 100, }]}>
-              <Image style={styles.img} source={require('../assets/all-tasks-done-img.png')}></Image>
-              <Text style={styles.emptyText}>You nailed it!</Text>
-              <Text style={styles.emptyText}>Time to relax or add new goals.</Text>
-            </View>
-            }
-
             <FlatList
               data={displayTasks}
               keyExtractor={(item) => item.id}
               renderItem={renderItem}
               ListEmptyComponent={<View style={styles.emptyContainer}>
-                <Image style={styles.img} source={require('../assets/empty-task-img.png')}></Image>
+                <Image style={styles.img} source={require('../assets/empty_ask_img.png')}></Image>
                 <Text style={styles.emptyText}>No tasks in this category for now.</Text>
                 <Text style={styles.emptyText}>Click + to add your task.</Text>
               </View>}
+              ListHeaderComponent={
+                allDone ? (
+                  <View style={styles.emptyContainer}>
+                    <Image style={styles.img} source={require('../assets/all_tasks_done_img.png')} />
+                    <Text style={styles.emptyText}>You nailed it!</Text>
+                    <Text style={styles.emptyText}>Time to relax or add new goals.</Text>
+                  </View>
+                ) : null
+              }
             />
           </PaperProvider>
         </View>
@@ -414,7 +415,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 50,
+    marginBottom: 20
   },
   emptyText: {
     fontSize: 18,
@@ -424,8 +425,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   img: {
-    resizeMode: "center",
+    resizeMode: "contain",
     height: 300,
-
   }
 });
