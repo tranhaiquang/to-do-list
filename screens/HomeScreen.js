@@ -279,7 +279,7 @@ export default function HomeScreen({ navigation, route }) {
               keyExtractor={(item) => item.id}
               renderItem={renderItem}
               ListEmptyComponent={<View style={styles.emptyContainer}>
-                <Image style={styles.img} source={require('../assets/empty_ask_img.png')}></Image>
+                <Image style={styles.img} source={require('../assets/empty_task_img.png')}></Image>
                 <Text style={styles.emptyText}>No tasks in this category for now.</Text>
                 <Text style={styles.emptyText}>Click + to add your task.</Text>
               </View>}
