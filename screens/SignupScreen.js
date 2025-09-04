@@ -1,9 +1,8 @@
 import { useState, } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts, Quicksand_400Regular, Quicksand_700Bold, Quicksand_500Medium } from '@expo-google-fonts/quicksand';
 import { createUser } from '../firebase/firebaseAuth';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { StatusBar } from 'expo-status-bar';
 
 export default function SignUpScreen({ navigation }) {
@@ -112,80 +111,82 @@ export default function SignUpScreen({ navigation }) {
     return (
         <SafeAreaProvider>
             <SafeAreaView style={styles.screenContainer}>
-                <KeyboardAwareScrollView
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20} // Adjust as needed
                     style={{ flex: 1 }}
-                    contentContainerStyle={{
+                    
+                >
+                    <ScrollView contentContainerStyle={{
                         flexGrow: 1,
                         justifyContent: 'center',
                         paddingHorizontal: 30,
                         paddingVertical: 20
                     }}
-                    keyboardShouldPersistTaps="handled"
-                    enableOnAndroid
-                    extraScrollHeight={80}
-                >
-                    <StatusBar style='dark' translucent></StatusBar>
-                    <Text style={styles.headerText}>MY TO-DO</Text>
-                    <View style={styles.formContainer}>
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                placeholder="Name" placeholderTextColor="#8a8a8aff"
-                                onChangeText={handleNameChange}
-                                style={[styles.textInput, errors.name && styles.textInputError]}
-                            />
-                            {errors.name && (<Text style={styles.errorText}>{errors.name}</Text>)}
-                        </View>
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}>
+                        <StatusBar style='dark' translucent></StatusBar>
+                        <Text style={styles.headerText}>MY TO-DO</Text>
+                        <View style={styles.formContainer}>
+                            <View style={styles.inputGroup}>
+                                <TextInput
+                                    placeholder="Name" placeholderTextColor="#8a8a8aff"
+                                    onChangeText={handleNameChange}
+                                    style={[styles.textInput, errors.name && styles.textInputError]}
+                                />
+                                {errors.name && (<Text style={styles.errorText}>{errors.name}</Text>)}
+                            </View>
 
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                autoCapitalize='none'
-                                placeholder="Email" placeholderTextColor="#8a8a8aff"
-                                onChangeText={handleEmailChange}
-                                style={[styles.textInput, errors.email && styles.textInputError]}
-                            />
-                            {errors.email && (
-                                <Text style={styles.errorText}>{errors.email}</Text>
-                            )}
-                        </View>
+                            <View style={styles.inputGroup}>
+                                <TextInput
+                                    autoCapitalize='none'
+                                    placeholder="Email" placeholderTextColor="#8a8a8aff"
+                                    onChangeText={handleEmailChange}
+                                    style={[styles.textInput, errors.email && styles.textInputError]}
+                                />
+                                {errors.email && (
+                                    <Text style={styles.errorText}>{errors.email}</Text>
+                                )}
+                            </View>
 
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                autoCapitalize='none'
-                                placeholder="Password" placeholderTextColor="#8a8a8aff"
-                                secureTextEntry
-                                onChangeText={handlePasswordChange}
-                                style={[styles.textInput, errors.password && styles.textInputError]}
-                            />
-                            {errors.password && (<Text style={styles.errorText}>{errors.password}</Text>)}
-                        </View>
+                            <View style={styles.inputGroup}>
+                                <TextInput
+                                    autoCapitalize='none'
+                                    placeholder="Password" placeholderTextColor="#8a8a8aff"
+                                    secureTextEntry
+                                    onChangeText={handlePasswordChange}
+                                    style={[styles.textInput, errors.password && styles.textInputError]}
+                                />
+                                {errors.password && (<Text style={styles.errorText}>{errors.password}</Text>)}
+                            </View>
 
-                        <View style={styles.inputGroup}>
-                            <TextInput
-                                autoCapitalize='none'
-                                placeholder="Confirm password" placeholderTextColor="#8a8a8aff"
-                                secureTextEntry
-                                onChangeText={handleConfirmPassword}
-                                style={[styles.textInput, errors.confirmPassword && styles.textInputError]}
-                            />
-                            {errors.confirmPassword && (<Text style={styles.errorText}>{errors.confirmPassword}</Text>)}
-                        </View>
+                            <View style={styles.inputGroup}>
+                                <TextInput
+                                    autoCapitalize='none'
+                                    placeholder="Confirm password" placeholderTextColor="#8a8a8aff"
+                                    secureTextEntry
+                                    onChangeText={handleConfirmPassword}
+                                    style={[styles.textInput, errors.confirmPassword && styles.textInputError]}
+                                />
+                                {errors.confirmPassword && (<Text style={styles.errorText}>{errors.confirmPassword}</Text>)}
+                            </View>
 
-                        <TouchableOpacity onPress={handleCreateUser} style={styles.submitButton}>
-                            <Text style={[styles.submitButtonText, isLoading ?? styles.disabledButton]}>{isLoading ? 'SIGNING UP...' : 'SIGN UP'}</Text>
+                            <TouchableOpacity onPress={handleCreateUser} style={styles.submitButton}>
+                                <Text style={[styles.submitButtonText, isLoading ?? styles.disabledButton]}>{isLoading ? 'SIGNING UP...' : 'SIGN UP'}</Text>
 
-                        </TouchableOpacity>
-
-                        <View style={styles.footer} >
-                            <Text style={styles.footerText}>Already have account? </Text>
-                            <TouchableOpacity onPress={() => {
-                                navigation.navigate("LoginScreen")
-                            }}>
-                                <Text style={styles.signUpText}>Log In</Text>
                             </TouchableOpacity>
-                        </View>
-                    </View>
 
-                </KeyboardAwareScrollView>
+                            <View style={styles.footer} >
+                                <Text style={styles.footerText}>Already have account? </Text>
+                                <TouchableOpacity onPress={() => {
+                                    navigation.navigate("LoginScreen")
+                                }}>
+                                    <Text style={styles.signUpText}>Log In</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </SafeAreaView>
         </SafeAreaProvider >
     );
