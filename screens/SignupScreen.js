@@ -125,6 +125,7 @@ export default function SignUpScreen({ navigation }) {
                     }}
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}>
+                            
                         <StatusBar style='dark' translucent></StatusBar>
                         <Text style={styles.headerText}>MY TO-DO</Text>
                         <View style={styles.formContainer}>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Dimensions, ImageBackground, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
-import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { signIn } from '../firebase/firebaseAuth';
 import { Quicksand_400Regular, Quicksand_700Bold, Quicksand_500Medium, useFonts } from '@expo-google-fonts/quicksand';
 import * as SplashScreen from 'expo-splash-screen'
@@ -16,6 +16,7 @@ const getStatusBarHeight = () => {
         return StatusBar.currentHeight || 42;
     }
 };
+
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -27,14 +28,6 @@ export default function LoginScreen({ navigation }) {
         Quicksand_700Bold,
         Quicksand_500Medium
     })
-
-    // Get safe area insets for more precise measurements
-    const insets = useSafeAreaInsets();
-
-    // Calculate total dimensions including status bar
-    const statusBarHeight = getStatusBarHeight();
-    const totalHeight = height + statusBarHeight;
-    const totalWidth = width;
 
     useEffect(() => {
         async function prepare() {
@@ -117,125 +110,137 @@ export default function LoginScreen({ navigation }) {
         <SafeAreaProvider>
             <StatusBar style="light" translucent />
             <ImageBackground
-                onLayoutRootView={onLayoutRootView}
+                onLayout={onLayoutRootView}
                 source={require('../assets/background.png')}
-                style={[styles.background, { width: totalWidth, height: totalHeight }]}
+                style={styles.background}
                 resizeMode="cover"
-            />
-            <SafeAreaView style={styles.screenContainer}>
-                <KeyboardAvoidingView
-                    style={{ flex: 1 }}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-                >
-                    <ScrollView contentContainerStyle={{
-                        flexGrow: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        paddingHorizontal: 10,
-                        paddingVertical: 20
-                    }}
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator={false}>
-                        <Text style={styles.headerText}>MY TO-DO</Text>
-                        <BlurView intensity={40} tint='dark' style={styles.formContainer}>
-                            <View style={styles.inputGroup}>
-                                <TextInput
-                                    autoCapitalize='none'
-                                    placeholder="Email"
-                                    placeholderTextColor='rgba(255,255,255,0.7)'
-                                    onChangeText={handleEmailChange}
-                                    value={email}
-                                    style={[
-                                        styles.textInput,
-                                        errors.email && styles.textInputError
-                                    ]}
-                                    keyboardType="email-address"
-                                    autoComplete="email"
-                                />
-                                {errors.email && (
-                                    <Text style={styles.errorText}>{errors.email}</Text>
-                                )}
-                            </View>
-
-                            <View style={styles.inputGroup}>
-                                <TextInput
-                                    autoCapitalize='none'
-                                    placeholder="Password"
-                                    placeholderTextColor='rgba(255,255,255,0.7)'
-                                    secureTextEntry
-                                    onChangeText={handlePasswordChange}
-                                    value={password}
-                                    style={[
-                                        styles.textInput,
-                                        errors.password && styles.textInputError
-                                    ]}
-                                    autoComplete="password"
-                                />
-                                {errors.password && (
-                                    <Text style={styles.errorText}>{errors.password}</Text>
-                                )}
-                            </View>
-
-                            <TouchableOpacity
-                                onPress={handleSignIn}
-                                style={[
-                                    styles.submitButton,
-                                    isLoading && styles.disabledButton
-                                ]}
-                                disabled={isLoading}
+            >
+                <SafeAreaView style={styles.screenContainer}>
+                    <KeyboardAvoidingView
+                        style={styles.keyboardAvoidingView}
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        keyboardVerticalOffset={0}
+                    >
+                        <View style={styles.contentContainer}>
+                            <ScrollView
+                                contentContainerStyle={styles.scrollContent}
+                                keyboardShouldPersistTaps="handled"
+                                showsVerticalScrollIndicator={false}
+                                bounces={false}
                             >
-                                <Text style={styles.submitButtonText}>
-                                    {isLoading ? 'LOGGING IN...' : 'LOG IN'}
-                                </Text>
-                            </TouchableOpacity>
+                                <Text style={styles.headerText}>MY TO-DO</Text>
 
-                            <View style={styles.footer}>
-                                <Text style={styles.footerText}>Don't have account? </Text>
-                                <TouchableOpacity onPress={() => {
-                                    navigation.navigate("SignupScreen")
-                                }}>
-                                    <Text style={styles.signUpText}>Sign Up</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </BlurView>
-                    </ScrollView>
-                </KeyboardAvoidingView>
-            </SafeAreaView>
+                                <BlurView intensity={40} tint='dark' style={styles.formContainer}>
+                                    <View style={styles.inputGroup}>
+                                        <TextInput
+                                            autoCapitalize='none'
+                                            placeholder="Email"
+                                            placeholderTextColor='rgba(255,255,255,0.7)'
+                                            onChangeText={handleEmailChange}
+                                            value={email}
+                                            style={[
+                                                styles.textInput,
+                                                errors.email && styles.textInputError
+                                            ]}
+                                            keyboardType="email-address"
+                                            autoComplete="email"
+                                        />
+                                        {errors.email && (
+                                            <Text style={styles.errorText}>{errors.email}</Text>
+                                        )}
+                                    </View>
+
+                                    <View style={styles.inputGroup}>
+                                        <TextInput
+                                            autoCapitalize='none'
+                                            placeholder="Password"
+                                            placeholderTextColor='rgba(255,255,255,0.7)'
+                                            secureTextEntry
+                                            onChangeText={handlePasswordChange}
+                                            value={password}
+                                            style={[
+                                                styles.textInput,
+                                                errors.password && styles.textInputError
+                                            ]}
+                                            autoComplete="password"
+                                        />
+                                        {errors.password && (
+                                            <Text style={styles.errorText}>{errors.password}</Text>
+                                        )}
+                                    </View>
+
+                                    <TouchableOpacity
+                                        onPress={handleSignIn}
+                                        style={[
+                                            styles.submitButton,
+                                            isLoading && styles.disabledButton
+                                        ]}
+                                        disabled={isLoading}
+                                    >
+                                        <Text style={styles.submitButtonText}>
+                                            {isLoading ? 'LOGGING IN...' : 'LOG IN'}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.footer}>
+                                        <Text style={styles.footerText}>Don't have account? </Text>
+                                        <TouchableOpacity onPress={() => {
+                                            navigation.navigate("SignupScreen")
+                                        }}>
+                                            <Text style={styles.signUpText}>Sign Up</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </BlurView>
+                            </ScrollView>
+                        </View>
+                    </KeyboardAvoidingView>
+                </SafeAreaView>
+            </ImageBackground>
         </SafeAreaProvider>
     );
 }
 
 const styles = StyleSheet.create({
+    background: {
+        flex: 1,
+    },
     screenContainer: {
         flex: 1,
     },
-    background: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: width,
-        height: height,
+    keyboardAvoidingView: {
+        flex: 1,
     },
-    formContainer: {
-        justifyContent: 'center',
-        width: '96%',
-        maxHeight: '100%',
-        minHeight: '50%',
-        borderRadius: 16,
-        paddingHorizontal: 25,
-        overflow: 'hidden'
+    contentContainer: {
+        flex: 1,
+        paddingHorizontal: 10,
+    },
+    headerContainer: {
+        flex: 0.4,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        minHeight: 40,
     },
     headerText: {
         fontSize: 50,
         textAlign: "center",
         fontFamily: "Quicksand_700Bold",
-        marginBottom: 60,
         color: "white",
         textShadowColor: 'rgba(0, 0, 0, 0.3)',
         textShadowOffset: { width: 3, height: 3 },
         textShadowRadius: 2,
+        marginBottom: 60
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        paddingBottom: 20,
+    },
+    formContainer: {
+        width: '100%',
+        borderRadius: 16,
+        paddingHorizontal: 25,
+        paddingVertical: 30,
+        overflow: 'hidden'
     },
     inputGroup: {
         marginBottom: 15,
@@ -314,5 +319,4 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
     },
-
 });
