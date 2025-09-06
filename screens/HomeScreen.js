@@ -25,7 +25,7 @@ import {
   setIsDone,
   deleteTaskOnFirestore,
   getUsernameOnFirestore,
-  setTaskTitle,
+  editTask,
 } from "../firebase/firestoreServices";
 import { signOutFromFirebase } from "../firebase/firebaseAuth";
 import moment from "moment";
@@ -160,14 +160,14 @@ export default function HomeScreen({ navigation, route }) {
           visible={confirmModalVisible}
           message="Are you want to delete this task?"
         />
+
         {/* TextInputModal for editing a task title */}
         <TextInputModal
           modalVisible={editModalVisible}
           inputPlaceholderText="Enter task title"
-          setText={setCurrentTaskTitle}
           inputRef={inputRef}
-          onConfirm={() => {
-            setTaskTitle(userId, item.id, currentTaskTitle);
+          onConfirm={(currentTaskTitle, selectedTag) => {
+            editTask(userId, item.id, currentTaskTitle, selectedTag);
             dismissUIOverlays();
           }}
           onDismiss={dismissUIOverlays}

@@ -54,13 +54,24 @@ const setIsDone = async (userId, taskId, isDone) => {
   }
 }
 
-const setTaskTitle = async (userId, taskId, taskTitle) => {
+const editTask = async (userId, taskId, taskTitle, taskTag) => {
   try {
     const taskRef = doc(db, userId, taskId)
     const snapshot = await getDoc(taskRef)
     if (snapshot.exists()) {
+      const updateData = {}
+
+      if (taskTitle && taskTitle.trim() != "") {
+        updateData.title = taskTitle.trim()
+      }
+
+      if (taskTag) {
+        updateData.tag = taskTag
+      }
+      
       await setDoc(taskRef, {
-        title: taskTitle
+        title: updateData.title,
+        tag: updateData.tag
       }, { merge: true })
     }
   } catch (error) {
@@ -111,4 +122,4 @@ const deleteTaskOnFirestore = async (userId, taskId) => {
   }
 }
 
-export { addTaskToFirestore, listenToFirestoreData, setIsDone, createUserOnFirestore, setTaskTitle, deleteTaskOnFirestore, getUsernameOnFirestore };
+export { addTaskToFirestore, listenToFirestoreData, setIsDone, createUserOnFirestore, editTask, deleteTaskOnFirestore, getUsernameOnFirestore };

@@ -30,8 +30,6 @@ export default function TextInputModal({
   modalVisible,
   inputRef,
   inputPlaceholderText,
-  setText,
-  setTag,
 }) {
   const [fontsLoaded] = useFonts({
     Quicksand_400Regular,
@@ -74,9 +72,7 @@ export default function TextInputModal({
 
   const handleTagChange = (item) => {
     setSelectedTag(item.value);
-    if (typeof setTag === "function") {
-      setTag(item.value);
-    }
+
     if (errors.selectedTag) {
       setErrors((prev) => ({ ...prev, selectedTag: null }));
     }
@@ -95,8 +91,7 @@ export default function TextInputModal({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      if (typeof setText === "function") setText(taskText);
-      if (typeof onConfirm === "function") onConfirm();
+      if (typeof onConfirm === "function") onConfirm(taskText, selectedTag);
     }
   };
 
