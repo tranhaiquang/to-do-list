@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Dimensions, ImageBackground, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { signIn } from '../firebase/firebaseAuth';
 import { Quicksand_400Regular, Quicksand_700Bold, Quicksand_500Medium, useFonts } from '@expo-google-fonts/quicksand';
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
+import ueseAuth from '../components/LoginWithGoogle';
+import LoginWithGoogle from '../components/LoginWithGoogle';
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,6 +23,8 @@ export default function LoginScreen({ navigation }) {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({});
+
+    const { signIn } = ueseAuth()
 
     const [fontsLoaded] = useFonts({
         Quicksand_400Regular,
@@ -182,6 +185,8 @@ export default function LoginScreen({ navigation }) {
                                         </Text>
                                     </TouchableOpacity>
 
+                                    <LoginWithGoogle></LoginWithGoogle>
+
                                     <View style={styles.footer}>
                                         <Text style={styles.footerText}>Don't have account? </Text>
                                         <TouchableOpacity onPress={() => {
@@ -189,6 +194,7 @@ export default function LoginScreen({ navigation }) {
                                         }}>
                                             <Text style={styles.signUpText}>Sign Up</Text>
                                         </TouchableOpacity>
+
                                     </View>
                                 </BlurView>
                             </ScrollView>
