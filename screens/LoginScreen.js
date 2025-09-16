@@ -7,6 +7,8 @@ import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
 import ueseAuth from '../components/LoginWithGoogle';
 import LoginWithGoogle from '../components/LoginWithGoogle';
+// REMOVE THIS LINE - Don't import AuthSession here
+// import * as AuthSession from "expo-auth-session";
 
 const { width, height } = Dimensions.get('window');
 
@@ -87,6 +89,12 @@ export default function LoginScreen({ navigation }) {
             setErrors(prev => ({ ...prev, password: null }));
         }
     };
+
+    // REMOVE THESE LINES - Don't manually create redirect URI
+    // const redirectUri = AuthSession.makeRedirectUri({
+    //     useProxy: true,   // 👈 forces https://auth.expo.io/...
+    // });
+    // console.log(redirectUri);
 
     const handleSignIn = async () => {
         if (isLoading) return;
@@ -295,7 +303,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.7)',
     },
     submitButtonText: {
-        fontSize: 20,
+        fontSize: 24,
         color: "rgba(255, 172, 207, 1)",
         fontFamily: "Quicksand_700Bold",
         textShadowColor: 'rgba(0, 0, 0, 0.3)',

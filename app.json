@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "My To-Do",
+    "owner": "sh4rry",
     "slug": "to-do-list-app",
     "scheme": "todolistapp",
     "version": "1.0.0",
@@ -25,7 +26,8 @@
       }
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.todolistapp"
     },
     "android": {
       "icon": "./assets/icon.png",
@@ -43,9 +45,7 @@
         "projectId": "ab055eab-c0ca-4005-956a-69ea0a8837f5"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/ab055eab-c0ca-4005-956a-69ea0a8837f5"
     }

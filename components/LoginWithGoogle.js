@@ -1,41 +1,34 @@
 import { TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
-import * as WebBrowser from "expo-web-browser"
-import * as Google from 'expo-auth-session/providers/google'
-import { useEffect } from 'react';
-import { AntDesign } from '@expo/vector-icons';
+import {
+  GoogleSignin,
+} from '@react-native-google-signin/google-signin';
+import { signIn } from '../components/googleSignIn';
+import { auth } from '../firebase/firebaseConfig';
+const webClientId = "96033539849-j3dkg03uin0h2qld7qijvesd4mrs4ddr.apps.googleusercontent.com"
 
-const webClientId = '96033539849-7omns3ldjdj8jk8koondo0ut9jot6cc5.apps.googleusercontent.com'
-const androidClientId = '96033539849-p0sseqkerre45stukjfmpa5t9jicjs1l.apps.googleusercontent.com'
-
-WebBrowser.maybeCompleteAuthSession()
-
+GoogleSignin.configure({
+  webClientId: webClientId,
+});
 
 export default function LoginWithGoogle() {
-  const config = {
-    webClientId,
-    androidClientId
-  }
-
-  const [request, response, promptAsync] = Google.useAuthRequest(config)
-
-  const handleToken = () => {
-    if (response?.type === "success") {
-      const { authentication } = response
-      const token = authentication?.accessToken
-      console.log("access token", token)
-    }
-  }
-
-  useEffect(() => {
-    handleToken()
-  }, [response])
-
+  const request = true
   return (
-    <TouchableOpacity style={styles.googleBtn} onPress={() => { promptAsync() }}>
-      <Image style={styles.googleIcon} source={{ uri: 'https://cdn-icons-png.flaticon.com/128/281/281764.png' }}></Image>
-      <Text style={styles.googleBtnText}>Continue with Google</Text>
+    <TouchableOpacity
+      style={styles.googleBtn}
+      onPress={signIn}
+      // Fix 6: Disable button if request is not ready
+      disabled={!request}
+    >
+      <Image
+        style={styles.googleIcon}
+        source={{ uri: 'https://cdn-icons-png.flaticon.com/128/281/281764.png' }}
+      />
+      <Text style={styles.googleBtnText}>
+        {!request ? 'Loading...' : 'Continue with Google'}
+      </Text>
     </TouchableOpacity>
-  )
+
+  );
 }
 
 const styles = StyleSheet.create({
@@ -49,21 +42,27 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: 'center',
     marginTop: 20,
-    position: 'relative'
+    gap: 10,
+    // Add shadow for better visual appeal
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   googleBtnText: {
-    fontSize: 16,
+    fontSize: 18,
     color: "rgba(255, 172, 207, 1)",
     fontFamily: "Quicksand_700Bold",
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-
   googleIcon: {
     width: 22,
     height: 22,
-    position: 'absolute',
-    left: 20
   }
 });
