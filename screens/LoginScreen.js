@@ -5,8 +5,8 @@ import { Quicksand_400Regular, Quicksand_700Bold, Quicksand_500Medium, useFonts 
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
-import ueseAuth from '../components/LoginWithGoogle';
 import LoginWithGoogle from '../components/LoginWithGoogle';
+import { signIn as signInWithEmail } from '../firebase/firebaseAuth';
 // REMOVE THIS LINE - Don't import AuthSession here
 // import * as AuthSession from "expo-auth-session";
 
@@ -26,7 +26,7 @@ export default function LoginScreen({ navigation }) {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
-    const { signIn } = ueseAuth()
+    // Use email/password sign-in from Firebase auth module
 
     const [fontsLoaded] = useFonts({
         Quicksand_400Regular,
@@ -105,7 +105,7 @@ export default function LoginScreen({ navigation }) {
 
         setIsLoading(true);
         try {
-            const user = await signIn(email.trim(), password.trim(), navigation);
+            const user = await signInWithEmail(email.trim(), password.trim(), navigation);
         } catch (error) {
             Alert.alert('Login Error', error.message || 'An error occurred during login');
         } finally {

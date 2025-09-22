@@ -1,9 +1,11 @@
 import { TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import {
   GoogleSignin,
 } from '@react-native-google-signin/google-signin';
 import { signIn } from '../components/googleSignIn';
-import { auth } from '../firebase/firebaseConfig';
+import { createUserOnFirestore } from '../firebase/firestoreServices';
+
 const webClientId = "96033539849-j3dkg03uin0h2qld7qijvesd4mrs4ddr.apps.googleusercontent.com"
 
 GoogleSignin.configure({
@@ -11,12 +13,14 @@ GoogleSignin.configure({
 });
 
 export default function LoginWithGoogle() {
+  const navigation = useNavigation();
   const request = true
   return (
     <TouchableOpacity
       style={styles.googleBtn}
-      onPress={signIn}
-      // Fix 6: Disable button if request is not ready
+      onPress={() => {
+        signIn(navigation)
+      }}
       disabled={!request}
     >
       <Image
