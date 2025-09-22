@@ -1,23 +1,40 @@
 {
   "expo": {
     "name": "My To-Do",
+    "owner": "sh4rry",
     "slug": "to-do-list-app",
+    "scheme": "todolistapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+<<<<<<< HEAD
     "plugins": [
       "expo-font",
       "expo-asset"
     ],
+=======
+    "plugins": ["expo-font", "@react-native-google-signin/google-signin"],
+>>>>>>> feature/sign-in-with-google
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "buid": {
+      "preview": {
+        "distribution": "internal",
+        "channel": "preview"
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      }
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.todolistapp"
     },
     "android": {
       "icon": "./assets/icon.png",
@@ -34,6 +51,10 @@
       "eas": {
         "projectId": "ab055eab-c0ca-4005-956a-69ea0a8837f5"
       }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/ab055eab-c0ca-4005-956a-69ea0a8837f5"
     }
   }
 }

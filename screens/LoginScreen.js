@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Dimensions, ImageBackground, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { signIn } from '../firebase/firebaseAuth';
 import { Quicksand_400Regular, Quicksand_700Bold, Quicksand_500Medium, useFonts } from '@expo-google-fonts/quicksand';
 import * as SplashScreen from 'expo-splash-screen'
 import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
+import LoginWithGoogle from '../components/LoginWithGoogle';
+import { signIn as signInWithEmail } from '../firebase/firebaseAuth';
+// REMOVE THIS LINE - Don't import AuthSession here
+// import * as AuthSession from "expo-auth-session";
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,6 +25,8 @@ export default function LoginScreen({ navigation }) {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({});
+
+    // Use email/password sign-in from Firebase auth module
 
     const [fontsLoaded] = useFonts({
         Quicksand_400Regular,
@@ -85,6 +90,12 @@ export default function LoginScreen({ navigation }) {
         }
     };
 
+    // REMOVE THESE LINES - Don't manually create redirect URI
+    // const redirectUri = AuthSession.makeRedirectUri({
+    //     useProxy: true,   // 👈 forces https://auth.expo.io/...
+    // });
+    // console.log(redirectUri);
+
     const handleSignIn = async () => {
         if (isLoading) return;
 
@@ -94,7 +105,7 @@ export default function LoginScreen({ navigation }) {
 
         setIsLoading(true);
         try {
-            const user = await signIn(email.trim(), password.trim(), navigation);
+            const user = await signInWithEmail(email.trim(), password.trim(), navigation);
         } catch (error) {
             Alert.alert('Login Error', error.message || 'An error occurred during login');
         } finally {
@@ -182,6 +193,8 @@ export default function LoginScreen({ navigation }) {
                                         </Text>
                                     </TouchableOpacity>
 
+                                    <LoginWithGoogle></LoginWithGoogle>
+
                                     <View style={styles.footer}>
                                         <Text style={styles.footerText}>Don't have account? </Text>
                                         <TouchableOpacity onPress={() => {
@@ -189,6 +202,7 @@ export default function LoginScreen({ navigation }) {
                                         }}>
                                             <Text style={styles.signUpText}>Sign Up</Text>
                                         </TouchableOpacity>
+
                                     </View>
                                 </BlurView>
                             </ScrollView>
@@ -289,7 +303,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.7)',
     },
     submitButtonText: {
-        fontSize: 20,
+        fontSize: 24,
         color: "rgba(255, 172, 207, 1)",
         fontFamily: "Quicksand_700Bold",
         textShadowColor: 'rgba(0, 0, 0, 0.3)',
