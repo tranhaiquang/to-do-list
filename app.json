@@ -9,14 +9,10 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-<<<<<<< HEAD
     "plugins": [
       "expo-font",
       "expo-asset"
     ],
-=======
-    "plugins": ["expo-font", "@react-native-google-signin/google-signin"],
->>>>>>> feature/sign-in-with-google
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

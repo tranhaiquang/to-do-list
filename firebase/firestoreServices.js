@@ -68,7 +68,7 @@ const editTask = async (userId, taskId, taskTitle, taskTag) => {
       if (taskTag) {
         updateData.tag = taskTag
       }
-      
+
       await setDoc(taskRef, {
         title: updateData.title,
         tag: updateData.tag
@@ -80,11 +80,11 @@ const editTask = async (userId, taskId, taskTitle, taskTag) => {
   }
 }
 
-const createUserOnFirestore = async (userId, name) => {
+const createUserOnFirestore = async (userId, name, photoURL) => {
   try {
 
     const documentRef = doc(db, userId, "info")
-    await setDoc(documentRef, { username: name });
+    await setDoc(documentRef, { username: name, photoURL: photoURL });
 
   }
   catch (error) {
@@ -93,14 +93,13 @@ const createUserOnFirestore = async (userId, name) => {
   }
 }
 
-const getUsernameOnFirestore = async (userId) => {
+const getUserInfo = async (userId) => {
   try {
     const docRef = doc(db, userId, "info")
     const docSnap = await getDoc(docRef)
 
     if (docSnap.exists()) {
-
-      return docSnap.data().username
+      return { username: docSnap.data().username, photoURL: docSnap.data().photoURL }
     }
     else {
       console.log("No such document!")
@@ -122,4 +121,4 @@ const deleteTaskOnFirestore = async (userId, taskId) => {
   }
 }
 
-export { addTaskToFirestore, listenToFirestoreData, setIsDone, createUserOnFirestore, editTask, deleteTaskOnFirestore, getUsernameOnFirestore };
+export { addTaskToFirestore, listenToFirestoreData, setIsDone, createUserOnFirestore, editTask, deleteTaskOnFirestore, getUserInfo };

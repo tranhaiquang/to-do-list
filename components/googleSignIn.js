@@ -36,7 +36,7 @@ export const signIn = async (navigation) => {
 
     console.log(result.user);
 
-    createUserOnFirestore(result.user.uid, result.user.displayName)
+    createUserOnFirestore(result.user.uid, result.user.displayName, result.user.photoURL)
 
     navigation.navigate("HomeScreen", { userId: result.user.uid })
     return result.user;

@@ -24,7 +24,7 @@ import {
   listenToFirestoreData,
   setIsDone,
   deleteTaskOnFirestore,
-  getUsernameOnFirestore,
+  getUserInfo,
   editTask,
 } from "../firebase/firestoreServices";
 import { signOutFromFirebase } from "../firebase/firebaseAuth";
@@ -44,7 +44,10 @@ import { StatusBar } from "expo-status-bar";
 // HomeScreen: Main component for the home/tasks screen
 export default function HomeScreen({ navigation, route }) {
   // State variables for user, modals, tasks, and UI
-  const [name, setName] = useState("");
+  const [userInfo, setUserInfo] = useState({
+    username: "User",
+    photoURL: "https://cdn-icons-png.flaticon.com/128/281/281764.png",
+  });
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [enterTaskModalVisible, setEnterTaskModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
@@ -97,8 +100,23 @@ export default function HomeScreen({ navigation, route }) {
       setIsDataLoaded(true);
     });
 
-    getUsernameOnFirestore(userId).then(setName);
-
+    getUserInfo(userId).then(fetchedUserInfo => {
+      if (fetchedUserInfo) {
+        const normalized = {
+          photoURL:
+            fetchedUserInfo.photoURL === undefined || fetchedUserInfo.photoURL === null
+              ? "https://cdn-icons-png.flaticon.com/128/281/281764.png"
+              : fetchedUserInfo.photoURL,
+          username:
+            fetchedUserInfo.username === undefined || fetchedUserInfo.username === null
+              ? "User"
+              : fetchedUserInfo.username,
+        };
+        setUserInfo(normalized);
+      } else {
+        console.log("No user info found");
+      }
+    });
     return () => unsubscribe();
   }, [userId, fontsLoaded]);
 
@@ -241,8 +259,11 @@ export default function HomeScreen({ navigation, route }) {
 
         {/* Header with greeting and logout */}
         <View style={styles.header}>
-          <Text style={styles.headerText}>Hi {name}</Text>
-          <TouchableOpacity onPress={() => signOutFromFirebase(navigation)}>
+          <View style={{ flexDirection: "row", alignItems: "center", flex: 1, justifyContent: "flex-start", gap: 8 }}>
+            <Image style={styles.headerImage} source={{ uri: userInfo.photoURL }} />
+            <Text style={styles.headerText}>{userInfo.username}</Text>
+          </View>
+          <TouchableOpacity style={{ alignSelf: "flex-end" }} onPress={() => signOutFromFirebase(navigation)}>
             <Feather name="log-out" size={20} />
           </TouchableOpacity>
         </View>
@@ -324,6 +345,11 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontFamily: "Quicksand_700Bold",
+  },
+  headerImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 100,
   },
   modalContainer: {
     flex: 1,
