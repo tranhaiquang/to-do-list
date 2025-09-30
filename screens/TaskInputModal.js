@@ -16,6 +16,8 @@ import {
 } from '@expo-google-fonts/quicksand';
 import * as SplashScreen from 'expo-splash-screen';
 import { Dropdown } from 'react-native-element-dropdown';
+import { addTaskToFirestore } from '../firebase/firestoreServices';
+import moment from 'moment';
 
 const TAGS = [
   { label: 'Work', value: 'work' },
@@ -24,12 +26,12 @@ const TAGS = [
   { label: 'Birthday', value: 'birthday' },
 ];
 
-export default function TextInputModal({
+export default function TaskInputModal({
   onDismiss,
-  onConfirm,
   modalVisible,
   inputRef,
-  inputPlaceholderText,
+  userId,
+  onConfirm,
 }) {
   const [fontsLoaded] = useFonts({
     Quicksand_400Regular,
@@ -39,7 +41,7 @@ export default function TextInputModal({
   const [selectedTag, setSelectedTag] = useState('');
   const [taskText, setTaskText] = useState('');
   const [errors, setErrors] = useState({})
-
+  const currentMMDD = moment().format("DD-MM");
   // Handle splash screen logic only once
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
@@ -52,7 +54,6 @@ export default function TextInputModal({
   }, [fontsLoaded]);
 
   const handleDismiss = onDismiss || Keyboard.dismiss;
-
 
   // Reset when modal closes
   useEffect(() => {
@@ -91,7 +92,8 @@ export default function TextInputModal({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      if (typeof onConfirm === "function") onConfirm(taskText, selectedTag);
+      addTaskToFirestore(userId, taskText,currentMMDD, selectedTag, false);
+      onDismiss();
     }
   };
 
@@ -108,7 +110,7 @@ export default function TextInputModal({
               style={[styles.modalTextInput, errors.taskText && styles.modalTextInputError]}
               onChangeText={handleTaskTitleChange}
               value={taskText}
-              placeholder={inputPlaceholderText}
+              placeholder={"Enter task title"}
               placeholderTextColor="#aaa"
             />
             {errors.taskText && <Text style={styles.errorText}>{errors.taskText}</Text>}

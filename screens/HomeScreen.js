@@ -20,7 +20,6 @@ import {
   PaperProvider,
 } from "react-native-paper";
 import {
-  addTaskToFirestore,
   listenToFirestoreData,
   setIsDone,
   deleteTaskOnFirestore,
@@ -28,9 +27,8 @@ import {
   editTask,
 } from "../firebase/firestoreServices";
 import { signOutFromFirebase } from "../firebase/firebaseAuth";
-import moment from "moment";
 import ConfirmModal from "./ConfirmModal";
-import TextInputModal from "./TextInputModal";
+import TaskInputModal from "./TaskInputModal";
 import {
   Quicksand_400Regular,
   Quicksand_500Medium,
@@ -40,6 +38,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import TaskEditModal from "./TaskEditModal";
 
 // HomeScreen: Main component for the home/tasks screen
 export default function HomeScreen({ navigation, route }) {
@@ -51,21 +50,18 @@ export default function HomeScreen({ navigation, route }) {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [enterTaskModalVisible, setEnterTaskModalVisible] = useState(false);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-  const [currentTaskTitle, setCurrentTaskTitle] = useState("");
   const [checked, setChecked] = useState("second");
   const [tasks, setTasks] = useState([]);
   const [displayTasks, setDisplayTasks] = useState([])
   const [menuVisibleId, setMenuVisibleId] = useState(null);
   const [touchPosition, setTouchPosition] = useState({ x: 0, y: 0 });
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const filterTag = ["All", "Working", "Personal", "Wishlist", "Birthday"];
+  const filterTag = ["All", "Work", "Personal", "Wishlist", "Birthday"];
   const [selectedFilterTag, setSelectedFilterTag] = useState("all")
-  const [selectedTag, setSelectedTag] = useState("")
+  const [editingTask, setEditingTask] = useState(null);
   const allDone = displayTasks.length > 0 && displayTasks.every(task => task.isDone === true)
-
   const inputRef = useRef(null);
   const { userId } = route.params;
-  const currentMMDD = moment().format("DD-MM");
 
   // Load custom fonts
   const [fontsLoaded] = useFonts({
@@ -73,7 +69,6 @@ export default function HomeScreen({ navigation, route }) {
     Quicksand_500Medium,
     Quicksand_700Bold,
   });
-
 
   // Track if any modal is visible
   const anyModalVisible =
@@ -130,8 +125,8 @@ export default function HomeScreen({ navigation, route }) {
   }
 
   useEffect(() => {
-    filterByTag("all")
-  }, [tasks])
+    filterByTag(selectedFilterTag)
+  }, [tasks, selectedFilterTag])
 
   // Hide splash screen when ready
   useEffect(() => {
@@ -152,6 +147,7 @@ export default function HomeScreen({ navigation, route }) {
     setEditModalVisible(false);
     setEnterTaskModalVisible(false);
     setConfirmModalVisible(false);
+    setEditingTask(null);
     closeMenu();
   }, [closeMenu]);
 
@@ -179,17 +175,8 @@ export default function HomeScreen({ navigation, route }) {
           message="Are you want to delete this task?"
         />
 
-        {/* TextInputModal for editing a task title */}
-        <TextInputModal
-          modalVisible={editModalVisible}
-          inputPlaceholderText="Enter task title"
-          inputRef={inputRef}
-          onConfirm={(currentTaskTitle, selectedTag) => {
-            editTask(userId, item.id, currentTaskTitle, selectedTag);
-            dismissUIOverlays();
-          }}
-          onDismiss={dismissUIOverlays}
-        />
+        {/* Removed per-item TaskEditModal; using a single, screen-level modal */}
+
         {/* RadioButton for marking task as done */}
         <RadioButton
           color="rgba(255, 172, 207, 1)"
@@ -214,6 +201,7 @@ export default function HomeScreen({ navigation, route }) {
         >
           <Menu.Item
             onPress={() => {
+              setEditingTask(item);
               setEditModalVisible(true);
               closeMenu();
             }}
@@ -244,16 +232,21 @@ export default function HomeScreen({ navigation, route }) {
         />
 
         {/* Modal for entering a new task */}
-        <TextInputModal
+        <TaskInputModal
           modalVisible={enterTaskModalVisible}
-          inputPlaceholderText="Enter task"
-          setText={setCurrentTaskTitle}
-          setTag={setSelectedTag}
           inputRef={inputRef}
-          onConfirm={() => {
-            addTaskToFirestore(userId, currentTaskTitle, currentMMDD, selectedTag, false);
-            dismissUIOverlays();
-          }}
+          onDismiss={dismissUIOverlays}
+          userId={userId}
+        />
+
+        {/* Single screen-level TaskEditModal for editing a task */}
+        <TaskEditModal
+          modalVisible={editModalVisible}
+          inputRef={inputRef}
+          taskId={editingTask?.id}
+          userId={userId}
+          currentTaskTitle={editingTask?.title}
+          currentTaskTag={editingTask?.tag}
           onDismiss={dismissUIOverlays}
         />
 
@@ -292,7 +285,6 @@ export default function HomeScreen({ navigation, route }) {
         </ScrollView>
 
         {/* Task List */}
-
         <View style={styles.listContainer}>
           <PaperProvider>
             <FlatList

@@ -36,7 +36,12 @@ export const signIn = async (navigation) => {
 
     console.log(result.user);
 
-    createUserOnFirestore(result.user.uid, result.user.displayName, result.user.photoURL)
+    // Create user doc if not exists; ignore if already exists
+    try {
+      await createUserOnFirestore(result.user.uid, result.user.displayName, result.user.photoURL)
+    } catch (createErr) {
+      console.warn('Warning: createUserOnFirestore failed, proceeding to app', createErr)
+    }
 
     navigation.navigate("HomeScreen", { userId: result.user.uid })
     return result.user;

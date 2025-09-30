@@ -90,11 +90,6 @@ export default function LoginScreen({ navigation }) {
         }
     };
 
-    // REMOVE THESE LINES - Don't manually create redirect URI
-    // const redirectUri = AuthSession.makeRedirectUri({
-    //     useProxy: true,   // 👈 forces https://auth.expo.io/...
-    // });
-    // console.log(redirectUri);
 
     const handleSignIn = async () => {
         if (isLoading) return;

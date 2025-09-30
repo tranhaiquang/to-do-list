@@ -82,14 +82,21 @@ const editTask = async (userId, taskId, taskTitle, taskTag) => {
 
 const createUserOnFirestore = async (userId, name, photoURL) => {
   try {
-
     const documentRef = doc(db, userId, "info")
-    await setDoc(documentRef, { username: name, photoURL: photoURL });
+    const snapshot = await getDoc(documentRef)
 
+    if (snapshot.exists()) {
+      console.log("User already exists")
+      return false
+    }
+
+    await setDoc(documentRef, { username: name, photoURL: photoURL });
+    return true
   }
   catch (error) {
     console.log(error)
     Alert.alert(error.message)
+    throw error
   }
 }
 
@@ -113,11 +120,20 @@ const getUserInfo = async (userId) => {
 
 const deleteTaskOnFirestore = async (userId, taskId) => {
   try {
-    await deleteDoc(doc(db, userId, taskId))
+    const taskRef = doc(db, userId, taskId)
+    const snapshot = await getDoc(taskRef)
+
+    if (!snapshot.exists()) {
+      return false
+    }
+
+    await deleteDoc(taskRef)
+    return true
   }
   catch (error) {
     console.log(error)
     Alert.alert(error.message)
+    throw error
   }
 }
 
