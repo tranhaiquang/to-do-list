@@ -31,17 +31,16 @@ export default function TaskInputModal({
   modalVisible,
   inputRef,
   userId,
-  onConfirm,
 }) {
   const [fontsLoaded] = useFonts({
     Quicksand_400Regular,
     Quicksand_700Bold,
   });
-
   const [selectedTag, setSelectedTag] = useState('');
   const [taskText, setTaskText] = useState('');
   const [errors, setErrors] = useState({})
   const currentMMDD = moment().format("DD-MM");
+
   // Handle splash screen logic only once
   useEffect(() => {
     SplashScreen.preventAutoHideAsync();
@@ -92,7 +91,7 @@ export default function TaskInputModal({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      addTaskToFirestore(userId, taskText,currentMMDD, selectedTag, false);
+      addTaskToFirestore(userId, taskText, currentMMDD, selectedTag, false);
       onDismiss();
     }
   };

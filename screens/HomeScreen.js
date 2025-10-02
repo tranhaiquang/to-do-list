@@ -27,8 +27,8 @@ import {
   editTask,
 } from "../firebase/firestoreServices";
 import { signOutFromFirebase } from "../firebase/firebaseAuth";
-import ConfirmModal from "./ConfirmModal";
-import TaskInputModal from "./TaskInputModal";
+import ConfirmModal from "../components/ConfirmModal";
+import TaskInputModal from "../components/TaskInputModal";
 import {
   Quicksand_400Regular,
   Quicksand_500Medium,
@@ -38,7 +38,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import TaskEditModal from "./TaskEditModal";
+import TaskEditModal from "../components/TaskEditModal";
 
 // HomeScreen: Main component for the home/tasks screen
 export default function HomeScreen({ navigation, route }) {

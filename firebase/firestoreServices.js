@@ -1,7 +1,10 @@
+// Firestore data-access utilities for tasks and user profile
 import { Alert } from "react-native";
 import { db } from "./firebaseConfig";
-import { doc, collection, addDoc, setDoc, getDoc, deleteDoc, onSnapshot, Timestamp } from "firebase/firestore";
+import { doc, collection, addDoc, setDoc, getDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 
+// Add a new task document under the user's collection
+// Returns: void (throws on failure)
 const addTaskToFirestore = async (userId, title, date, tag, isDone) => {
   try {
     const collectionRef = await addDoc(collection(db, userId), {
@@ -16,6 +19,8 @@ const addTaskToFirestore = async (userId, title, date, tag, isDone) => {
   }
 };
 
+// Subscribe to real-time task updates for a user
+// Invokes onData with an array of task objects (excluding the 'info' doc)
 const listenToFirestoreData = (uid, onData) => {
   try {
     const collectionRef = collection(db, uid);
@@ -37,6 +42,7 @@ const listenToFirestoreData = (uid, onData) => {
   }
 };
 
+// Update only the isDone field for a task if it exists
 const setIsDone = async (userId, taskId, isDone) => {
   try {
     const taskRef = doc(db, userId, taskId);
@@ -54,6 +60,7 @@ const setIsDone = async (userId, taskId, isDone) => {
   }
 }
 
+// Edit task title/tag if the task exists; ignores empty title
 const editTask = async (userId, taskId, taskTitle, taskTag) => {
   try {
     const taskRef = doc(db, userId, taskId)
@@ -80,6 +87,8 @@ const editTask = async (userId, taskId, taskTitle, taskTag) => {
   }
 }
 
+// Ensure a user profile document exists at {userId}/info
+// Returns: true if created, false if already exists
 const createUserOnFirestore = async (userId, name, photoURL) => {
   try {
     const documentRef = doc(db, userId, "info")
@@ -100,6 +109,7 @@ const createUserOnFirestore = async (userId, name, photoURL) => {
   }
 }
 
+// Fetch the user's profile document (username, photoURL); returns undefined if missing
 const getUserInfo = async (userId) => {
   try {
     const docRef = doc(db, userId, "info")
@@ -118,6 +128,7 @@ const getUserInfo = async (userId) => {
   }
 }
 
+// Delete a task if it exists; returns true if deleted, false if not found
 const deleteTaskOnFirestore = async (userId, taskId) => {
   try {
     const taskRef = doc(db, userId, taskId)

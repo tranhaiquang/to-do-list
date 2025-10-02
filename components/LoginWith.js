@@ -1,34 +1,22 @@
 import { TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import {
-  GoogleSignin,
-} from '@react-native-google-signin/google-signin';
-import { signIn } from '../components/googleSignIn';
-import { createUserOnFirestore } from '../firebase/firestoreServices';
+import { signIn } from '../firebase/googleSignIn';
 
-const webClientId = "96033539849-j3dkg03uin0h2qld7qijvesd4mrs4ddr.apps.googleusercontent.com"
-
-GoogleSignin.configure({
-  webClientId: webClientId,
-});
-
-export default function LoginWithGoogle() {
+export default function LoginWith({ btnText, iconURL }) {
   const navigation = useNavigation();
-  const request = true
   return (
     <TouchableOpacity
-      style={styles.googleBtn}
+      style={styles.btn}
       onPress={() => {
         signIn(navigation)
       }}
-      disabled={!request}
     >
       <Image
-        style={styles.googleIcon}
-        source={{ uri: 'https://cdn-icons-png.flaticon.com/128/281/281764.png' }}
+        style={styles.icon}
+        source={{ uri: iconURL }}
       />
-      <Text style={styles.googleBtnText}>
-        {!request ? 'Loading...' : 'Continue with Google'}
+      <Text style={styles.btnText}>
+        {btnText}
       </Text>
     </TouchableOpacity>
 
@@ -36,7 +24,7 @@ export default function LoginWithGoogle() {
 }
 
 const styles = StyleSheet.create({
-  googleBtn: {
+  btn: {
     flexDirection: 'row',
     width: '100%',
     height: 40,
@@ -57,7 +45,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  googleBtnText: {
+  btnText: {
     fontSize: 18,
     color: "rgba(255, 172, 207, 1)",
     fontFamily: "Quicksand_700Bold",
@@ -65,7 +53,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  googleIcon: {
+  icon: {
     width: 22,
     height: 22,
   }

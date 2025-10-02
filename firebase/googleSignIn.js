@@ -1,7 +1,13 @@
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { createUserOnFirestore } from '../firebase/firestoreServices';
+import { createUserOnFirestore } from './firestoreServices';
 import { GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import { auth } from '../firebase/firebaseConfig';
+import { auth } from './firebaseConfig';
+
+const webClientId = "96033539849-j3dkg03uin0h2qld7qijvesd4mrs4ddr.apps.googleusercontent.com"
+
+GoogleSignin.configure({
+  webClientId: webClientId,
+});
 
 export const signIn = async (navigation) => {
   try {
