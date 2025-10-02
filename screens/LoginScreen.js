@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, Dimensions, ImageBackground, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Quicksand_400Regular, Quicksand_700Bold, Quicksand_500Medium, useFonts } from '@expo-google-fonts/quicksand';
 import * as SplashScreen from 'expo-splash-screen'
@@ -7,12 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { BlurView } from 'expo-blur';
 import LoginWith from '../components/LoginWith';
 
-
 export default function LoginScreen({ navigation }) {
-
-    const [isLoading, setIsLoading] = useState(false);
-
-    // Use email/password sign-in from Firebase auth module
 
     const [fontsLoaded] = useFonts({
         Quicksand_400Regular,
@@ -32,7 +27,6 @@ export default function LoginScreen({ navigation }) {
             await SplashScreen.hideAsync();
         }
     }, [fontsLoaded]);
-
 
 
     if (!fontsLoaded) {
@@ -62,9 +56,9 @@ export default function LoginScreen({ navigation }) {
                                 bounces={false}
                             >
                                 <Text style={styles.headerText}>MY TO-DO</Text>
+
                                 <BlurView intensity={40} tint='dark' style={styles.formContainer}>
-                                    <LoginWith btnText="Continue with Google" iconURL="https://cdn-icons-png.flaticon.com/128/281/281764.png"></LoginWith>
-                                    <LoginWith btnText="Continue with Facebook" iconURL="https://cdn-icons-png.flaticon.com/128/5968/5968764.png"></LoginWith>
+                                    <LoginWith btnText="Continue with Google" iconURL="https://cdn-icons-png.flaticon.com/128/281/281764.png" />
                                 </BlurView>
                             </ScrollView>
                         </View>
@@ -89,12 +83,6 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 10,
     },
-    headerContainer: {
-        flex: 0.4,
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        minHeight: 40,
-    },
     headerText: {
         fontSize: 50,
         textAlign: "center",
@@ -103,7 +91,7 @@ const styles = StyleSheet.create({
         textShadowColor: 'rgba(0, 0, 0, 0.3)',
         textShadowOffset: { width: 3, height: 3 },
         textShadowRadius: 2,
-        marginBottom: 60
+        marginBottom: 20
     },
     scrollContent: {
         flexGrow: 1,
@@ -115,8 +103,11 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         paddingHorizontal: 25,
         paddingVertical: 30,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        minHeight: 120,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 20
     },
-
 
 });
