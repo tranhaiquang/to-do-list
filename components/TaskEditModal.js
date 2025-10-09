@@ -9,6 +9,7 @@ import {
     TextInput,
     Keyboard,
     Text,
+    Platform,
 } from 'react-native';
 import {
     Quicksand_700Bold,
@@ -18,6 +19,8 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { Dropdown } from 'react-native-element-dropdown';
 import { editTask } from '../firebase/firestoreServices';
+import moment from 'moment';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Available tag options for the dropdown
 const TAGS = [
@@ -36,6 +39,7 @@ export default function TaskEditModal({
     taskId,
     currentTaskTitle,
     currentTaskTag,
+    currentTaskDate,
 }) {
     // Load fonts
     const [fontsLoaded] = useFonts({
@@ -47,7 +51,14 @@ export default function TaskEditModal({
     const [selectedTag, setSelectedTag] = useState('');
     const [taskText, setTaskText] = useState('');
     const [errors, setErrors] = useState({})
-
+    const [date, setDate] = useState(new Date());
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const handleDateChange = (event, selectedDate) => {
+        if (selectedDate instanceof Date) {
+            setDate(selectedDate);
+        }
+        setShowDatePicker(false);
+    };
     // Splash screen: prevent auto-hide on mount
     useEffect(() => {
         SplashScreen.preventAutoHideAsync();
@@ -68,6 +79,7 @@ export default function TaskEditModal({
             setSelectedTag('');
             setTaskText('');
             setErrors({});
+            setShowDatePicker(false);
         }
     }, [modalVisible]);
 
@@ -76,8 +88,14 @@ export default function TaskEditModal({
         if (modalVisible) {
             setTaskText(currentTaskTitle || '');
             setSelectedTag(currentTaskTag || '');
+            if (currentTaskDate) {
+                const parsed = moment(currentTaskDate, 'DD-MM-YYYY');
+                setDate(parsed.isValid() ? parsed.toDate() : new Date());
+            } else {
+                setDate(new Date());
+            }
         }
-    }, [modalVisible, currentTaskTitle, currentTaskTag]);
+    }, [modalVisible, currentTaskTitle, currentTaskTag, currentTaskDate]);
 
     // Handlers: input changes and validation clearing
     const handleTaskTitleChange = (text) => {
@@ -109,7 +127,8 @@ export default function TaskEditModal({
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length === 0) {
-            editTask(userId, taskId, taskText, selectedTag);
+            const formattedDate = moment(date).format('DD-MM-YYYY');
+            editTask(userId, taskId, taskText, selectedTag, formattedDate);
             onDismiss();
         }
     };
@@ -120,54 +139,76 @@ export default function TaskEditModal({
     // Render
     return (
         <Modal animationType="fade" visible={modalVisible} transparent>
-            <TouchableWithoutFeedback style={{ flex: 1 }} onPress={handleDismiss}>
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalView}>
-                        <TextInput
-                            ref={inputRef}
-                            style={[styles.modalTextInput, errors.taskText && styles.modalTextInputError]}
-                            onChangeText={handleTaskTitleChange}
-                            value={taskText}
-                            placeholder={"Enter task title"}
-                            placeholderTextColor="#aaa"
+            <View style={styles.modalContainer}>
+                <TouchableWithoutFeedback onPress={handleDismiss}>
+                    <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
+                </TouchableWithoutFeedback>
+                <View style={styles.modalView}>
+                    <TextInput
+                        ref={inputRef}
+                        style={[styles.modalTextInput, errors.taskText && styles.modalTextInputError]}
+                        onChangeText={handleTaskTitleChange}
+                        value={taskText}
+                        placeholder={"Enter task title"}
+                        placeholderTextColor="#aaa"
+                    />
+                    {errors.taskText && <Text style={styles.errorText}>{errors.taskText}</Text>}
+                    <Dropdown
+                        style={[styles.dropdown, errors.selectedTag && styles.dropdownError]}
+                        containerStyle={styles.dropdownContainer}
+                        itemContainerStyle={styles.itemContainer}
+                        itemTextStyle={styles.itemText}
+                        selectedTextStyle={styles.selectedText}
+                        data={TAGS}
+                        labelField="label"
+                        valueField="value"
+                        placeholder="Select tag"
+                        placeholderStyle={{ fontFamily: 'Quicksand_400Regular' }}
+                        value={selectedTag}
+                        onChange={handleTagChange}
+                    />
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => setShowDatePicker(true)}
+                        accessibilityRole="button"
+                        style={[styles.modalTextInput, errors.taskText && styles.modalTextInputError, { justifyContent: 'center' }]}
+                    >
+                        <Text style={{ color: '#000', fontFamily: 'Quicksand_400Regular', fontSize: 16 }}>
+                            {date ? moment(date).format('DD-MM-YYYY') : 'Select date'}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={date}
+                            mode="date"
+                            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                            onChange={handleDateChange}
                         />
-                        {errors.taskText && <Text style={styles.errorText}>{errors.taskText}</Text>}
-                        <Dropdown
-                            style={[styles.dropdown, errors.selectedTag && styles.dropdownError]}
-                            containerStyle={styles.dropdownContainer}
-                            itemContainerStyle={styles.itemContainer}
-                            itemTextStyle={styles.itemText}
-                            selectedTextStyle={styles.selectedText}
-                            data={TAGS}
-                            labelField="label"
-                            valueField="value"
-                            placeholder="Select tag"
-                            placeholderStyle={{ fontFamily: 'Quicksand_400Regular' }}
-                            value={selectedTag}
-                            onChange={handleTagChange}
-                        />
-                        {errors.selectedTag && <Text style={styles.errorText}>{errors.selectedTag}</Text>}
-                        <View
-                            style={{
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                gap: 20,
-                                flexDirection: 'row',
-                            }}
+                    )}
+                    {errors.selectedTag && <Text style={styles.errorText}>{errors.selectedTag}</Text>}
+                    <View
+                        style={{
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            gap: 20,
+                            flexDirection: 'row',
+                        }}
+                    >
+
+
+                        <TouchableOpacity
+                            style={styles.cancelBtn}
+                            onPress={handleDismiss}
                         >
-                            <TouchableOpacity
-                                style={styles.cancelBtn}
-                                onPress={handleDismiss}
-                            >
-                                <Text style={styles.cancelBtnText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleSubmit} style={styles.submitBtn}>
-                                <Text style={styles.submitBtnText}>Submit</Text>
-                            </TouchableOpacity>
-                        </View>
+                            <Text style={styles.cancelBtnText}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleSubmit} style={styles.submitBtn}>
+                            <Text style={styles.submitBtnText}>Submit</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </TouchableWithoutFeedback>
+            </View>
         </Modal>
     );
 }

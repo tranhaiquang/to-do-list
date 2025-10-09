@@ -61,7 +61,7 @@ const setIsDone = async (userId, taskId, isDone) => {
 }
 
 // Edit task title/tag if the task exists; ignores empty title
-const editTask = async (userId, taskId, taskTitle, taskTag) => {
+const editTask = async (userId, taskId, taskTitle, taskTag, taskDate) => {
   try {
     const taskRef = doc(db, userId, taskId)
     const snapshot = await getDoc(taskRef)
@@ -76,9 +76,14 @@ const editTask = async (userId, taskId, taskTitle, taskTag) => {
         updateData.tag = taskTag
       }
 
+      if (taskDate) {
+        updateData.date = taskDate
+      }
+
       await setDoc(taskRef, {
         title: updateData.title,
-        tag: updateData.tag
+        tag: updateData.tag,
+        date: updateData.date
       }, { merge: true })
     }
   } catch (error) {

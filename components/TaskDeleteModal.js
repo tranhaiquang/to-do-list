@@ -1,8 +1,9 @@
 import { Modal, View, Text, TouchableOpacity, StyleSheet, } from "react-native";
 import { Quicksand_700Bold, Quicksand_500Medium, useFonts, Quicksand_400Regular } from "@expo-google-fonts/quicksand";
+import { deleteTaskOnFirestore } from "../firebase/firestoreServices";
 import * as SplashScreen from 'expo-splash-screen'
 
-export default function ConfirmModal({ visible, message, onDismiss, onConfirm }) {
+export default function TaskDeleteModal({ visible, userId, taskId, onDismiss }) {
     const [fontsLoaded] = useFonts({ Quicksand_500Medium, Quicksand_700Bold, Quicksand_400Regular })
 
     SplashScreen.preventAutoHideAsync()
@@ -13,12 +14,15 @@ export default function ConfirmModal({ visible, message, onDismiss, onConfirm })
         <Modal animationType="fade" visible={visible} transparent={true}>
             <View style={styles.modalContainer}>
                 <View style={styles.modalView}>
-                    <Text style={styles.messageText}>{message}</Text>
+                    <Text style={styles.messageText}>Are you want to delete this task?</Text>
                     <View style={{ justifyContent: "center", alignItems: "center", gap: 20, flexDirection: "row" }}>
                         <TouchableOpacity onPress={() => { onDismiss() }} style={styles.cancelBtn}>
                             <Text style={styles.cancelBtnText}>Cancel</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { onConfirm() }} style={styles.submitBtn}>
+                        <TouchableOpacity onPress={() => { 
+                            deleteTaskOnFirestore(userId, taskId)
+                            onDismiss()
+                         }} style={styles.submitBtn}>
                             <Text style={styles.submitBtnText}>Submit</Text>
                         </TouchableOpacity>
 

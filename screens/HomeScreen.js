@@ -22,12 +22,11 @@ import {
 import {
   listenToFirestoreData,
   setIsDone,
-  deleteTaskOnFirestore,
   getUserInfo,
-  editTask,
+
 } from "../firebase/firestoreServices";
 import { signOutFromFirebase } from "../firebase/firebaseAuth";
-import ConfirmModal from "../components/ConfirmModal";
+import TaskDeleteModal from "../components/TaskDeleteModal";
 import TaskInputModal from "../components/TaskInputModal";
 import {
   Quicksand_400Regular,
@@ -39,6 +38,7 @@ import { Feather } from "@expo/vector-icons";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import TaskEditModal from "../components/TaskEditModal";
+import moment from "moment";
 
 // HomeScreen: Main component for the home/tasks screen
 export default function HomeScreen({ navigation, route }) {
@@ -49,7 +49,7 @@ export default function HomeScreen({ navigation, route }) {
   });
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [enterTaskModalVisible, setEnterTaskModalVisible] = useState(false);
-  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [taskDeleteModalVisible, setTaskDeleteModalVisible] = useState(false);
   const [checked, setChecked] = useState("second");
   const [tasks, setTasks] = useState([]);
   const [displayTasks, setDisplayTasks] = useState([])
@@ -72,7 +72,7 @@ export default function HomeScreen({ navigation, route }) {
 
   // Track if any modal is visible
   const anyModalVisible =
-    enterTaskModalVisible || confirmModalVisible || editModalVisible;
+    enterTaskModalVisible || taskDeleteModalVisible || editModalVisible;
 
   // Prevent splash screen auto-hide until ready
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function HomeScreen({ navigation, route }) {
     Keyboard.dismiss();
     setEditModalVisible(false);
     setEnterTaskModalVisible(false);
-    setConfirmModalVisible(false);
+    setTaskDeleteModalVisible(false);
     setEditingTask(null);
     closeMenu();
   }, [closeMenu]);
@@ -161,21 +161,18 @@ export default function HomeScreen({ navigation, route }) {
         const { pageX, pageY } = e.nativeEvent;
         setTouchPosition({ x: pageX, y: pageY });
       }}
-      onLongPress={() => openMenu(item.id)}
-    >
-      <View style={styles.taskView}>
-        {/* ConfirmModal for deleting a task */}
-        <ConfirmModal
-          onDismiss={dismissUIOverlays}
-          onConfirm={() => {
-            deleteTaskOnFirestore(userId, item.id);
-            setConfirmModalVisible(false);
-          }}
-          visible={confirmModalVisible}
-          message="Are you want to delete this task?"
-        />
+      onLongPress={() => {
+        openMenu(item.id)
+      }}>
 
-        {/* Removed per-item TaskEditModal; using a single, screen-level modal */}
+      <View style={styles.taskView}>
+        {/* TaskDeleteModal for deleting a task */}
+        <TaskDeleteModal
+          userId={userId}
+          taskId={item.id}
+          onDismiss={dismissUIOverlays}
+          visible={taskDeleteModalVisible}
+        />
 
         {/* RadioButton for marking task as done */}
         <RadioButton
@@ -191,8 +188,16 @@ export default function HomeScreen({ navigation, route }) {
           <Text style={item.isDone ? styles.taskTextChecked : styles.taskText}>
             {item.title}
           </Text>
-          <Text style={styles.taskDateText}>{item.date}</Text>
+          <Text style={[
+            styles.taskDateText,
+            {
+              color: moment(item.date, "DD-MM-YYYY").isBefore(moment(), "day")
+                ? "rgba(255, 0, 0, 0.48)"
+                : "rgb(36, 194, 44)",
+            },
+          ]}>{item.date}</Text>
         </View>
+
         {/* Menu for edit/delete actions */}
         <Menu
           visible={menuVisibleId === item.id}
@@ -212,7 +217,7 @@ export default function HomeScreen({ navigation, route }) {
           <Menu.Item
             style={styles.menuItem}
             onPress={() => {
-              setConfirmModalVisible(true);
+              setTaskDeleteModalVisible(true);
               closeMenu();
             }}
             title="Delete"
