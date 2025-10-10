@@ -1,6 +1,5 @@
 // HomeScreen component - main screen for displaying and managing tasks
 // Observed for UI and state changes related to tasks, modals, and user actions
-
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Text,
@@ -20,15 +19,6 @@ import {
   PaperProvider,
 } from "react-native-paper";
 import {
-  listenToFirestoreData,
-  setIsDone,
-  getUserInfo,
-
-} from "../firebase/firestoreServices";
-import { signOutFromFirebase } from "../firebase/firebaseAuth";
-import TaskDeleteModal from "../components/TaskDeleteModal";
-import TaskInputModal from "../components/TaskInputModal";
-import {
   Quicksand_400Regular,
   Quicksand_500Medium,
   Quicksand_700Bold,
@@ -37,8 +27,18 @@ import {
 import { Feather } from "@expo/vector-icons";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import TaskEditModal from "../components/TaskEditModal";
 import moment from "moment";
+
+import {
+  listenToFirestoreData,
+  setIsDone,
+  getUserInfo,
+} from "../firebase/firestoreServices";
+import { signOutFromFirebase } from "../firebase/firebaseAuth";
+import TaskDeleteModal from "../components/TaskDeleteModal";
+import TaskInputModal from "../components/TaskInputModal";
+import TaskEditModal from "../components/TaskEditModal";
+import { handleTaskNotifications } from "../components/NotificationService";
 
 // HomeScreen: Main component for the home/tasks screen
 export default function HomeScreen({ navigation, route }) {
@@ -92,6 +92,7 @@ export default function HomeScreen({ navigation, route }) {
         return dateA - dateB;
       });
       setTasks(sortedTasks);
+      handleTaskNotifications(sortedTasks);
       setIsDataLoaded(true);
     });
 
@@ -127,6 +128,8 @@ export default function HomeScreen({ navigation, route }) {
   useEffect(() => {
     filterByTag(selectedFilterTag)
   }, [tasks, selectedFilterTag])
+
+
 
   // Hide splash screen when ready
   useEffect(() => {

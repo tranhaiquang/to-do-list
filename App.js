@@ -5,8 +5,11 @@ import LoginScreen from "./screens/LoginScreen"
 import { useEffect, useState } from "react";
 import { auth } from "./firebase/firebaseConfig"
 import { onAuthStateChanged } from "firebase/auth";
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import { createAndroidChannel } from "./components/NotificationService";
 
-Notification.setNotificationHandler({
+Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
     shouldSetBadge: false,
@@ -22,19 +25,34 @@ export default function App() {
 
   useEffect(() => {
     async function init() {
+      // request permission (shows prompt)
       if (!Device.isDevice) {
-        console.warn("Not a physical device, notifications not supported")
+        console.warn('Notifications require a physical device for reliable testing.');
       }
-      const {status} = await Notification.getStatusAsync()
-      if (!status.isGranted) {
-        const {status: newStatus} = await Notification.requestPermissionsAsync()
-        if (newStatus !== "granted") {
-          console.warn("Permission for notifications was denied")
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'granted') {
+        const { status: newStatus } = await Notifications.requestPermissionsAsync();
+        if (newStatus !== 'granted') {
+          Alert.alert('Notifications', 'Permission not granted. Reminders will be disabled.');
         }
       }
+      // create Android notification channel (important for sound/importance)
+      if (Platform.OS === 'android') await createAndroidChannel();
     }
-    init()
-  }, [])
+
+    init();
+
+    // Optional: handle when the user taps the notification
+    const sub = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      // e.g. navigation to task detail: navigate('Task', { id: data.taskId })
+      console.log('User tapped notification, data:', data);
+    });
+
+    return () => sub.remove();
+  }, []);
+
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user)
